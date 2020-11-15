@@ -1,0 +1,639 @@
+openapi: "3.0.0"
+info:
+  title: Halo API
+  description: API for Halo Financial Technologies, Inc. Application
+  version: 1.0.0
+
+servers:
+  - url: https://halo.gift/v1
+    description: Production Server
+  - url: https://staging-halo.gift/v1
+    description: Internal Staging Server for testing
+
+paths: 
+  # MARK: User Endpoint               
+  /users:
+    get:
+      summary: Retrieves halo user information
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  phone_number:
+                    type: string
+                  email_address:
+                    type: string
+                  dob:
+                    type: string
+                  wishlist:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        image_url:
+                          type: string
+                        deeplink:
+                          type: string
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        price:
+                          type: number
+                          format: double
+                        image_url: 
+                          type: string
+                        deeplink:
+                          type: string
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User has not been created yet
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+    
+    post:
+      summary: Creates user after onboarding experience
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone_number:
+                  type: string
+                email_address:
+                  type: string
+                dob:
+                  type: string
+      responses:
+        201:
+          description: User Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    description: Halo Generated User Id
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+    put:
+      summary: Update user information
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone_number:
+                  type: string
+                email_address:
+                  type: string
+                dob:
+                  type: string
+      responses:
+        200:
+          description: Halo User Updated
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+    delete:
+      summary: Deletes Halo User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Halo User deleted
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+  # MARK: Card Endpoint
+  /card:
+    get:
+      summary: Retrieves Halo Card Information
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned Halo Card information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  account_number:
+                    type: string
+                  exp_date:
+                    type: string
+                  ccv:
+                    type: string
+        401:
+          description: Unauthorized. Halo User Id is not valid
+        404:
+          description: Not Found. Halo User Id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+   
+  # MARK: Activity Endpoint - Would be nice to have for the Alpha but not seeing a way to make a post
+  /activity:
+    get:
+      summary: Retrieves user activity timeline data
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned user activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user:
+                      type: object
+                      description: Halo user that made post
+                      properties:
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        profile_image_url:
+                          type: string
+                        profile_deeplink:
+                          type: string
+                    message:
+                      type: string
+                    timestamp:
+                      type: string
+                    image_url:
+                      type: string  
+                    image_deeplink:
+                      type: string             
+                    likes:
+                      type: integer
+                      format: int64
+                    comments:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          content:
+                            type: string
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server  
+
+  # MARK: Contacts Endpoint
+  /contacts:
+    get:
+      summary: Retrieves halo user contacts info
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned user contacts information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    phone_number:
+                      type: string
+                    profile_image_url:
+                      type: string
+                    favorite:
+                      type: boolean
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server  
+    
+    # DMS 11/14/20: Not sure how users would import their contacts. Would need to devise a way to map phone contacts to Halo User Ids. Maybe contacts stay on device?
+    post:
+      summary: Add user(s) to contacts
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  phone_number:
+                    type: string
+                  favorite:
+                    type: boolean
+      responses:
+        201:
+          description: User Contact(s) added
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+    put:
+      summary: Update user favorite
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  contact_id:
+                    type: string
+                    description: Halo User Id to be modified in user contacts
+                  favorite:
+                    type: boolean
+      responses:
+        200:
+          description: User Contacts List Updated
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        409:
+          description: Conflict. Contact User id does not exist
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+    delete:
+      summary: Delete user contact
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contact_id:
+                  type: string
+      responses:
+        200:
+          description: User contact removed from Halo User Profile
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        409:
+          description: Conflict. Contact Id not found under User id profile
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+  
+  # MARK: Transactions Endpoint
+  /transactions:
+    get:
+      summary: Retrieves halo user transactions
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+        - name: start_range
+          in: query
+          description: Start Date Range For Transactions
+          schema:
+            type: string
+        - name: end_range
+          in: query
+          description: End Date Range For Transactions
+          schema:
+            type: string
+        - name: count
+          in: query
+          description: Number of transactions to return
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          description: Transaction Status (i.e. Active or Pending)
+          schema:
+            type: string
+            enum: [ACTIVE, PENDING, CREDIT]
+      responses:
+        200:
+          description: Successfully returned user transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  image_url:
+                    type: string
+                  amount:
+                    type: number
+                    format: double
+                  status:
+                    type: string
+                    enum: [ACTIVE, PENDING, CREDIT]
+                  timestamp:
+                    type: string
+        400:
+          description: Bad User Request. Query Parameters are invalid
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+  
+    post:
+      summary: Create new transaction
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipient_id: 
+                  type: string
+                  description: Halo User Id receiving transaction
+                amount:
+                  type: number
+                  format: double
+                payment_method:
+                  type: string
+                  enum: [HALO, CREDIT, DEBIT]
+                card_number:
+                  type: string
+                gift_id:
+                  type: string
+                  description: Id for Gift Recommended
+                # DMS 11/14/20: Need to figure out how to send video message in payload
+                video_message:
+                  type: string
+      responses:
+        201:
+          description: Transaction posted
+        400:
+          description: Bad User Request. RequestBody is invalid
+        401:
+          description: Unauthorized. The user id specified is not valid
+        404:
+          description: Not Found. User id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+  
+  # MARK: Marketplace Endpoint
+  /marketplace:
+    get:
+      summary: Retrieves Marketplace Products for Halo Users
+      parameters:
+        - name: product_tag
+          in: query
+          description: Halo Marketplace Product Tag
+          schema:
+            type: string
+            enum: [PRODUCT, EXPERIENCE, BRAND]
+        - name: min_range
+          in: query
+          description: Minimum price range
+          schema:
+            type: integer
+            format: int64
+        - name: max_range
+          in: query
+          description: Maximum price range
+          schema:
+            type: integer
+            format: int64
+        - name: count
+          in: query
+          description: Number of products to return
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned Halo marketplace product listing
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    image_url:
+                      type: string
+                    pricing:
+                      type: number
+                      format: double
+        400:
+          description: Bad Request. Query Parameters are invalid
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+
+  # MARK: Products Endpoint
+  /products:
+    get:
+      summary: Retrieves Halo Product Information
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          description: Halo Product Id
+          schema:
+            type: integer
+            format: int64
+        - name: user_id
+          in: query
+          description: Halo User Id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully returned Halo Product information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  image_urls:
+                    type: array
+                    items:
+                      type: string
+                  pricing:
+                    type: number
+                    format: double
+                  description:
+                    type: string
+                  specifications:
+                    type: string
+                  reviews:
+                    type: array
+                    items:
+                      type: string
+                  favorite:
+                    type: boolean
+        400:
+          description: Bad Request. Request Parameters are invalid
+        404:
+          description: Not Found. Product Id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the user data from the Halo Server
+       
+
+
+        
+
+  
+          
+                    
+                
+                    
+                  
+
+          
+
+
+        
+
+      
+
+                    
+                    
+
+                
+                  
+        

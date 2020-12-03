@@ -181,73 +181,30 @@ paths:
                     type: string
                   ccv:
                     type: string
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        image_url:
+                          type: string
+                        amount:
+                          type: number
+                          format: double
+                        status:
+                          type: string
+                          enum: [ACTIVE, PENDING, CREDIT]
+                        timestamp:
+                          type: string
+                        
         401:
           description: Unauthorized. Halo User Id is not valid
         404:
           description: Not Found. Halo User Id has not been found
-        500:
-          description: Server Error. There was a problem retrieving the user data from the Halo Server
-   
-  # MARK: Activity Endpoint - Would be nice to have for the Alpha but not seeing a way to make a post
-  /activity:
-    get:
-      summary: Retrieves user activity timeline data
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          description: Halo User Id
-          schema:
-            type: integer
-            format: int64
-      responses:
-        200:
-          description: Successfully returned user activity feed
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    user:
-                      type: object
-                      description: Halo user that made post
-                      properties:
-                        first_name:
-                          type: string
-                        last_name:
-                          type: string
-                        profile_image_url:
-                          type: string
-                        profile_deeplink:
-                          type: string
-                    message:
-                      type: string
-                    timestamp:
-                      type: string
-                    image_url:
-                      type: string  
-                    image_deeplink:
-                      type: string             
-                    likes:
-                      type: integer
-                      format: int64
-                    comments:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          content:
-                            type: string
-        401:
-          description: Unauthorized. The user id specified is not valid
-        404:
-          description: Not Found. User id has not been found
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server  
 
@@ -403,8 +360,7 @@ paths:
       summary: Retrieves halo user transactions
       parameters:
         - name: user_id
-          in: path
-          required: true
+          in: query
           description: Halo User Id
           schema:
             type: integer
@@ -439,24 +395,76 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  image_url:
-                    type: string
-                  amount:
-                    type: number
-                    format: double
-                  status:
-                    type: string
-                    enum: [ACTIVE, PENDING, CREDIT]
-                  timestamp:
-                    type: string
+                  sent:
+                    type: object
+                    properties:
+                      transactions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            image_url:
+                              type: string
+                            amount:
+                              type: number
+                              format: double
+                            status:
+                              type: string
+                              enum: [ACTIVE, PENDING, CREDIT]
+                            timestamp:
+                              type: string
+                            user:
+                              type: object
+                              description: Halo user that sent transaction
+                              properties:
+                                id:
+                                  type: string
+                                first_name:
+                                  type: string
+                                last_name:
+                                  type: string
+                                profile_image_url:
+                                  type: string
+                  received:
+                    type: object
+                    properties:
+                      transactions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            image_url:
+                              type: string
+                            amount:
+                              type: number
+                              format: double
+                            status:
+                              type: string
+                              enum: [ACTIVE, PENDING, CREDIT]
+                            timestamp:
+                              type: string
+                            user:
+                              type: object
+                              description: Halo user that sent transaction
+                              properties:
+                                id:
+                                  type: string
+                                first_name:
+                                  type: string
+                                last_name:
+                                  type: string
+                                profile_image_url:
+                                  type: string
         400:
           description: Bad User Request. Query Parameters are invalid
-        401:
-          description: Unauthorized. The user id specified is not valid
         404:
           description: Not Found. User id has not been found
         500:
@@ -490,12 +498,13 @@ paths:
                   enum: [HALO, CREDIT, DEBIT]
                 card_number:
                   type: string
-                gift_id:
+                product_id:
                   type: string
-                  description: Id for Gift Recommended
+                  description: Id for Product Recommended
                 # DMS 11/14/20: Need to figure out how to send video message in payload
-                video_message:
+                message_id:
                   type: string
+                  description: Message Id for Vouchr
       responses:
         201:
           description: Transaction posted

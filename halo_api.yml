@@ -21,8 +21,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         200:
           description: Successfully returned user data
@@ -112,8 +111,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -137,6 +135,7 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
+    # Ignore for Alpha
     delete:
       summary: Deletes Halo User
       parameters:
@@ -145,8 +144,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         200:
           description: Halo User deleted
@@ -163,8 +161,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         200:
           description: Successfully returned Halo Card information
@@ -175,7 +172,7 @@ paths:
                 properties:
                   id:
                     type: string
-                  account_number:
+                  card_number:
                     type: string
                   exp_date:
                     type: string
@@ -189,8 +186,6 @@ paths:
                         id:
                           type: string
                         name:
-                          type: string
-                        image_url:
                           type: string
                         amount:
                           type: number
@@ -218,8 +213,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         200:
           description: Successfully returned user contacts information
@@ -249,7 +243,7 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server  
     
-    # DMS 11/14/20: Not sure how users would import their contacts. Would need to devise a way to map phone contacts to Halo User Ids. Maybe contacts stay on device?
+    # Ignore for Alpha
     post:
       summary: Add user(s) to contacts
       parameters:
@@ -258,8 +252,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -287,6 +280,7 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
+    # Ignore for Alpha
     put:
       summary: Update user favorite
       parameters:
@@ -295,8 +289,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -323,6 +316,7 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
+    # Ignore for Alpha
     delete:
       summary: Delete user contact
       parameters:
@@ -331,8 +325,7 @@ paths:
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -354,39 +347,38 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
   
-  # MARK: Transactions Endpoint
-  /transactions:
+  # MARK: Gifts Endpoint
+  /gifts:
     get:
-      summary: Retrieves halo user transactions
+      summary: Retrieves halo user gifts
       parameters:
         - name: user_id
           in: query
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
         - name: start_range
           in: query
-          description: Start Date Range For Transactions
+          description: Start Date Range For Gifts
           schema:
             type: string
         - name: end_range
           in: query
-          description: End Date Range For Transactions
+          description: End Date Range For Gifts
           schema:
             type: string
         - name: count
           in: query
-          description: Number of transactions to return
+          description: Number of gifts to return
           schema:
             type: integer
             format: int64
-        - name: status
+        - name: sendType
           in: query
-          description: Transaction Status (i.e. Active or Pending)
+          description: Gift Send Type (i.e. Sent, Received)
           schema:
             type: string
-            enum: [ACTIVE, PENDING, CREDIT]
+            enum: [SENT, RECEIVED]
       responses:
         200:
           description: Successfully returned user transactions
@@ -395,74 +387,49 @@ paths:
               schema:
                 type: object
                 properties:
-                  sent:
-                    type: object
-                    properties:
-                      transactions:
-                        type: array
-                        items:
+                  gifts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        image_url:
+                          type: string
+                        amount:
+                          type: number
+                          format: double
+                        status:
+                          type: string
+                          enum: [ACTIVE, PENDING, CREDIT]
+                        timestamp:
+                          type: string
+                        sender:
                           type: object
+                          description: Halo user that sent gift
                           properties:
                             id:
                               type: string
-                            name:
+                            first_name:
                               type: string
-                            image_url:
+                            last_name:
                               type: string
-                            amount:
-                              type: number
-                              format: double
-                            status:
+                            profile_image_url:
                               type: string
-                              enum: [ACTIVE, PENDING, CREDIT]
-                            timestamp:
-                              type: string
-                            user:
-                              type: object
-                              description: Halo user that sent transaction
-                              properties:
-                                id:
-                                  type: string
-                                first_name:
-                                  type: string
-                                last_name:
-                                  type: string
-                                profile_image_url:
-                                  type: string
-                  received:
-                    type: object
-                    properties:
-                      transactions:
-                        type: array
-                        items:
+                        receiver:
                           type: object
+                          description: Halo user that received gift
                           properties:
                             id:
                               type: string
-                            name:
+                            first_name:
                               type: string
-                            image_url:
+                            last_name:
                               type: string
-                            amount:
-                              type: number
-                              format: double
-                            status:
+                            profile_image_url:
                               type: string
-                              enum: [ACTIVE, PENDING, CREDIT]
-                            timestamp:
-                              type: string
-                            user:
-                              type: object
-                              description: Halo user that sent transaction
-                              properties:
-                                id:
-                                  type: string
-                                first_name:
-                                  type: string
-                                last_name:
-                                  type: string
-                                profile_image_url:
-                                  type: string
         400:
           description: Bad User Request. Query Parameters are invalid
         404:
@@ -471,15 +438,14 @@ paths:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
   
     post:
-      summary: Create new transaction
+      summary: Create new gift
       parameters:
         - name: user_id
           in: path
           required: true
           description: Halo User Id
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -489,25 +455,25 @@ paths:
               properties:
                 recipient_id: 
                   type: string
-                  description: Halo User Id receiving transaction
+                  description: Halo User Id receiving gift
                 amount:
                   type: number
                   format: double
                 payment_method:
                   type: string
-                  enum: [HALO, CREDIT, DEBIT]
+                  enum: [HALO, STRIPE]
                 card_number:
                   type: string
-                product_id:
+                  description: Card Number (HALO) or Token (STRIPE) for Gift Transaction
+                marketplace_id:
                   type: string
-                  description: Id for Product Recommended
-                # DMS 11/14/20: Need to figure out how to send video message in payload
-                message_id:
+                  description: Id for Marketplace Item Recommended
+                message_url:
                   type: string
-                  description: Message Id for Vouchr
+                  description: Message URL for Vouchr
       responses:
         201:
-          description: Transaction posted
+          description: Gift transaction posted
         400:
           description: Bad User Request. RequestBody is invalid
         401:
@@ -515,7 +481,7 @@ paths:
         404:
           description: Not Found. User id has not been found
         500:
-          description: Server Error. There was a problem retrieving the user data from the Halo Server
+          description: Server Error. There was a problem posting the gift on the Halo Server
   
   # MARK: Marketplace Endpoint
   /marketplace:
@@ -532,14 +498,12 @@ paths:
           in: query
           description: Minimum price range
           schema:
-            type: integer
-            format: int64
+            type: string
         - name: max_range
           in: query
           description: Maximum price range
           schema:
-            type: integer
-            format: int64
+            type: string
         - name: count
           in: query
           description: Number of products to return
@@ -570,27 +534,20 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
-  # MARK: Products Endpoint
+  # MARK: Marketplace Item Endpoint
   /products:
     get:
-      summary: Retrieves Halo Product Information
+      summary: Retrieves Halo Marketplace Item Information
       parameters:
-        - name: product_id
+        - name: id
           in: path
           required: true
-          description: Halo Product Id
+          description: Halo Marketplace Item Id
           schema:
-            type: integer
-            format: int64
-        - name: user_id
-          in: query
-          description: Halo User Id
-          schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         200:
-          description: Successfully returned Halo Product information
+          description: Successfully returned Halo Marketplace Item information
           content:
             application/json:
               schema:
@@ -613,18 +570,65 @@ paths:
                     type: array
                     items:
                       type: string
-                  favorite:
-                    type: boolean
         400:
           description: Bad Request. Request Parameters are invalid
         404:
-          description: Not Found. Product Id has not been found
+          description: Not Found. Marketplace Item has not been found
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
-       
+    
+  # Wishlist Endpoint
+  /wishlist:
+    post:
+      summary: Save Wishlist Item
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: string
+        - name: marketplace_id
+          in: query
+          required: true
+          description: Halo Marketplace Item Id
+          schema:
+            type: string
+      responses:
+        201:
+          description: Wishlist Item Added
+        400:
+          description: Bad Request. Query Parameters are invalid
+        404:
+          description: Not Found. User/Marketplace Item not found
+        500:
+          description: Server Error. There was a problem updating the user data from the Halo Server
 
-
-        
+    delete:
+      summary: Remove Wishlist Item
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: string
+        - name: marketplace_id
+          in: query
+          required: true
+          description: Halo Marketplace Item Id
+          schema:
+            type: string
+      responses:
+        200:
+          description: Wishlist Item Removed
+        400:
+          description: Bad Request. Query Parameters are invalid
+        404:
+          description: Not Found. User/Marketplace Item not found
+        500:
+          description: Server Error. There was a problem updaing the user data from the Halo Server
+          
 
   
           

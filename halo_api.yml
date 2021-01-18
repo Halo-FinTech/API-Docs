@@ -535,7 +535,7 @@ paths:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
   # MARK: Marketplace Item Endpoint
-  /products:
+  /marketplaceItem:
     get:
       summary: Retrieves Halo Marketplace Item Information
       parameters:

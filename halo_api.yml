@@ -40,29 +40,47 @@ paths:
                     type: string
                   dob:
                     type: string
+                  address:
+                    type: object
+                    properties:
+                      address_line_1:
+                        type: string
+                      address_line_2:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        type: string
+                      zipcode:
+                        type: string
+                      country:
+                        type: string
                   wishlist:
                     type: array
                     items:
                       type: object
                       properties:
-                        image_url:
+                        id:
                           type: string
-                        deeplink:
+                        name: 
                           type: string
-                  history:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
+                        primary_image_url:
                           type: string
-                        price:
+                        additional_image_urls:
+                          type: array
+                          items:
+                            type: string
+                        pricing:
                           type: number
                           format: double
-                        image_url: 
+                        description:
                           type: string
-                        deeplink:
+                        specifications:
                           type: string
+                        reviews:
+                          type: array
+                          items:
+                            type: string
         401:
           description: Unauthorized. The user id specified is not valid
         404:
@@ -151,6 +169,34 @@ paths:
         500:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
+  # MARK: JWT Endpoint
+  /jwt:
+    get:
+      summary: Retrieves JWT Token for Vouchr
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Halo User Id
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully returned JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        401:
+          description: Unauthorized. Halo User Id is not valid
+        404:
+          description: Not Found. Halo User Id has not been found
+        500:
+          description: Server Error. There was a problem retrieving the jwt token from the Halo Server  
+          
   # MARK: Card Endpoint
   /card:
     get:
@@ -162,6 +208,20 @@ paths:
           description: Halo User Id
           schema:
             type: string
+        - name: transaction_page
+          in: query
+          required: true
+          description: Page of transactions to return (defaults to first page)
+          schema:
+            type: number
+            format: int64
+        - name: transaction_count
+          in: query
+          required: false
+          description: Number of Transactions to retrieve (defaults to Gailieo default)
+          schema:
+            type: number
+            format: int64
       responses:
         200:
           description: Successfully returned Halo Card information
@@ -172,11 +232,14 @@ paths:
                 properties:
                   id:
                     type: string
+                  balance:
+                    type: number
+                    format: double
                   card_number:
                     type: string
                   exp_date:
                     type: string
-                  ccv:
+                  cvv:
                     type: string
                   transactions:
                     type: array
@@ -520,7 +583,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    id:
+                    marketplace_id:
                       type: string
                     name:
                       type: string
@@ -535,7 +598,7 @@ paths:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
   # MARK: Marketplace Item Endpoint
-  /products:
+  /marketplaceItem:
     get:
       summary: Retrieves Halo Marketplace Item Information
       parameters:
@@ -553,9 +616,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
                   name:
                     type: string
-                  image_urls:
+                  primary_image_url:
+                    type: string
+                  additional_image_urls:
                     type: array
                     items:
                       type: string

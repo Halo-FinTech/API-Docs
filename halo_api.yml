@@ -40,6 +40,8 @@ paths:
                     type: string
                   dob:
                     type: string
+                  profile_image_url:
+                    type: string
                   address:
                     type: object
                     properties:
@@ -170,7 +172,7 @@ paths:
           description: Server Error. There was a problem retrieving the user data from the Halo Server
 
   # MARK: JWT Endpoint
-  /jwt:
+  /vouchr:
     get:
       summary: Retrieves JWT Token for Vouchr
       parameters:
@@ -188,15 +190,41 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
+                  jwt:
                     type: string
         401:
           description: Unauthorized. Halo User Id is not valid
         404:
           description: Not Found. Halo User Id has not been found
         500:
-          description: Server Error. There was a problem retrieving the jwt token from the Halo Server  
-          
+          description: Server Error. There was a problem retrieving the jwt token from the Halo Server
+
+  # MARK: Stripe Endpoint
+  /stripe:
+    get:
+      summary: Retrieves Stripe keys
+      parameters:
+        - name: key_type
+          in: query
+          description: Stripe Key Type
+          schema:
+            type: string
+            enum: [PUBLISHABLE_KEY, EPHEMERAL_KEY]
+      responses:
+        200:
+          description: Successfully returned Stripe keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  publishable_key:
+                    type: string
+                  ephemeral_key:
+                    type: string
+        500:
+          description: Server Error. There was a problem retrieving the Stripe keys from the Halo Server  
+
   # MARK: Card Endpoint
   /card:
     get:
@@ -208,13 +236,6 @@ paths:
           description: Halo User Id
           schema:
             type: string
-        - name: transaction_page
-          in: query
-          required: true
-          description: Page of transactions to return (defaults to first page)
-          schema:
-            type: number
-            format: int64
         - name: transaction_count
           in: query
           required: false
@@ -230,8 +251,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
+                  user_id:
+                    type: number
                   balance:
                     type: number
                     format: double
@@ -241,24 +262,35 @@ paths:
                     type: string
                   cvv:
                     type: string
-                  transactions:
+                  galileo_account_id:
+                    type: number
+                  galileo_cardholder_id:
+                    type: number
+                  galileo_transactions:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
+                        transaction_id:
                           type: string
                         name:
                           type: string
                         amount:
                           type: number
                           format: double
+                        description:
+                          type: string
+                        transaction_subtype:
+                          type: string
+                          enum: [account_to_account, ach, account_funding]
+                        transaction_type:
+                          type: string
+                          enum: [card_activity, transfer, payment, adjustment, fee]
                         status:
                           type: string
-                          enum: [ACTIVE, PENDING, CREDIT]
+                          enum: [settled, pending]
                         timestamp:
                           type: string
-                        
         401:
           description: Unauthorized. Halo User Id is not valid
         404:
@@ -295,10 +327,13 @@ paths:
                       type: string
                     phone_number:
                       type: string
+                    email_address:
+                      type: string
                     profile_image_url:
                       type: string
-                    favorite:
-                      type: boolean
+                    # Ignore for Alpha
+                    # favorite:
+                    #   type: boolean
         401:
           description: Unauthorized. The user id specified is not valid
         404:
@@ -436,7 +471,7 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: sendType
+        - name: send_type
           in: query
           description: Gift Send Type (i.e. Sent, Received)
           schema:
@@ -455,12 +490,22 @@ paths:
                     items:
                       type: object
                       properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                        image_url:
-                          type: string
+                        marketplace:
+                          type: object
+                          properties:
+                            marketplace_id:
+                              type: number
+                            name:
+                              type: string
+                            price:
+                              type: number
+                              format: double
+                            primary_image_url:
+                              type: string
+                            additional_image_urls:
+                              type: array
+                              items:
+                                type: string
                         amount:
                           type: number
                           format: double
@@ -473,8 +518,8 @@ paths:
                           type: object
                           description: Halo user that sent gift
                           properties:
-                            id:
-                              type: string
+                            user_id:
+                              type: number
                             first_name:
                               type: string
                             last_name:
@@ -485,8 +530,8 @@ paths:
                           type: object
                           description: Halo user that received gift
                           properties:
-                            id:
-                              type: string
+                            user_id:
+                              type: number
                             first_name:
                               type: string
                             last_name:
@@ -525,9 +570,12 @@ paths:
                 payment_method:
                   type: string
                   enum: [HALO, STRIPE]
-                card_number:
+                stripe_payment_method_id:
                   type: string
-                  description: Card Number (HALO) or Token (STRIPE) for Gift Transaction
+                  description: Stripe Payment Method ID. For STRIPE payment_method, either this or stripe_payment_intent_id must be present.
+                stripe_payment_intent_id:
+                  type: string
+                  description: Stripe Payment Intent ID. For STRIPE payment_method, either this or stripe_payment_method_id must be present.
                 marketplace_id:
                   type: string
                   description: Id for Marketplace Item Recommended
@@ -535,8 +583,24 @@ paths:
                   type: string
                   description: Message URL for Vouchr
       responses:
+        200:
+          description: OK but additional Stripe action required before gift is successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requires_action:
+                    type: boolean
+                  client_secret:
+                    type: string
         201:
           description: Gift transaction posted
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Empty (HALO) or Stripe object (STRIPE) based on payment_method
         400:
           description: Bad User Request. RequestBody is invalid
         401:
@@ -584,14 +648,14 @@ paths:
                   type: object
                   properties:
                     marketplace_id:
-                      type: string
+                      type: number
                     name:
                       type: string
-                    image_url:
-                      type: string
-                    pricing:
+                    price:
                       type: number
                       format: double
+                    primary_image_url:
+                      type: string
         400:
           description: Bad Request. Query Parameters are invalid
         500:
@@ -602,12 +666,17 @@ paths:
     get:
       summary: Retrieves Halo Marketplace Item Information
       parameters:
-        - name: id
+        - name: marketplace_id
           in: path
           required: true
           description: Halo Marketplace Item Id
           schema:
             type: string
+        - name: user_id
+          in: query
+          description: Halo User Id
+          schema:
+            type: number
       responses:
         200:
           description: Successfully returned Halo Marketplace Item information
@@ -616,27 +685,36 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
+                  marketplace_id:
+                    type: number
                   name:
                     type: string
+                  description:
+                    type: string
+                  merchant:
+                    type: string
+                  type:
+                    type: string
+                    enum: [PRODUCT, EXPERIENCE, BRAND]
+                  price:
+                    type: number
+                    format: double
                   primary_image_url:
                     type: string
                   additional_image_urls:
                     type: array
                     items:
                       type: string
-                  pricing:
-                    type: number
-                    format: double
-                  description:
+                  affiliate_link:
                     type: string
-                  specifications:
-                    type: string
-                  reviews:
-                    type: array
-                    items:
-                      type: string
+                  wishlist: # only if user_id provided
+                    type: boolean
+                  # specifications:
+                  #   type: string
+                  # reviews:
+                  #   type: array
+                  #   items:
+                  #     type: string
         400:
           description: Bad Request. Request Parameters are invalid
         404:
@@ -695,25 +773,3 @@ paths:
           description: Not Found. User/Marketplace Item not found
         500:
           description: Server Error. There was a problem updaing the user data from the Halo Server
-          
-
-  
-          
-                    
-                
-                    
-                  
-
-          
-
-
-        
-
-      
-
-                    
-                    
-
-                
-                  
-        

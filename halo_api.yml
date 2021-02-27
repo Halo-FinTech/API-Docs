@@ -40,6 +40,8 @@ paths:
                     type: string
                   dob:
                     type: string
+                  bio:
+                    type: string
                   profile_image_url:
                     type: string
                   address:
@@ -109,6 +111,8 @@ paths:
                   type: string
                 dob:
                   type: string
+                bio:
+                  type: string
       responses:
         201:
           description: User Created
@@ -148,6 +152,8 @@ paths:
                 email_address:
                   type: string
                 dob:
+                  type: string
+                bio:
                   type: string
       responses:
         200:

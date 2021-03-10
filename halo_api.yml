@@ -573,13 +573,14 @@ paths:
           description: Halo User Id
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          required: true
-          description: Idempotency Key to avoid duplicate request
-          schema:
-            type: string
-            format: uuid
+        # TODO: will need to figure out later how we handle repeating transactions
+        # - name: Idempotency-Key
+        #   in: header
+        #   required: true
+        #   description: Idempotency Key to avoid duplicate request
+        #   schema:
+        #     type: string
+        #     format: uuid
       requestBody:
         required: true
         content:

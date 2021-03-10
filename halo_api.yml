@@ -283,7 +283,7 @@ paths:
                     type: number
                   galileo_cardholder_id:
                     type: number
-                  galileo_transactions:
+                  transactions:
                     type: array
                     items:
                       type: object

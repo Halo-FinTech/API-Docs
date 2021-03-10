@@ -44,21 +44,22 @@ paths:
                     type: string
                   profile_image_url:
                     type: string
-                  address:
-                    type: object
-                    properties:
-                      address_line_1:
-                        type: string
-                      address_line_2:
-                        type: string
-                      city:
-                        type: string
-                      state:
-                        type: string
-                      zipcode:
-                        type: string
-                      country:
-                        type: string
+                  # Ignore for Alpha
+                  # address:
+                  #   type: object
+                  #   properties:
+                  #     address_line_1:
+                  #       type: string
+                  #     address_line_2:
+                  #       type: string
+                  #     city:
+                  #       type: string
+                  #     state:
+                  #       type: string
+                  #     zipcode:
+                  #       type: string
+                  #     country:
+                  #       type: string
                   wishlist:
                     type: array
                     items:
@@ -216,6 +217,16 @@ paths:
           schema:
             type: string
             enum: [PUBLISHABLE_KEY, EPHEMERAL_KEY]
+        - name: user_id
+          in: query
+          description: Halo User Id to use for Ephemeral Key
+          schema:
+            type: number
+        - name: api_version
+          in: query
+          description: Stripe API Version to use for Ephemeral Key
+          schema:
+            type: string
       responses:
         200:
           description: Successfully returned Stripe keys
@@ -496,6 +507,8 @@ paths:
                     items:
                       type: object
                       properties:
+                        gift_id:
+                          type: string
                         marketplace:
                           type: object
                           properties:
@@ -560,6 +573,13 @@ paths:
           description: Halo User Id
           schema:
             type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Idempotency Key to avoid duplicate request
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
